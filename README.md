@@ -4,8 +4,8 @@ Provides a python class (FLIR_images) for extracting raw thermal image data
 from FLIR radiometric jpegs.
 
 
-Usage
------
+Example usage
+-------------
 ```
 from tirAnalysis.FLIR_images import FLIR_image
 im = FLIR_image("DJI_1098_R.JPG")
@@ -18,11 +18,11 @@ print(im.T_stats)
 
 Requirements
 ------------
+```
 matplotlib
-
 numpy
-
 PyExifTool
+```
 
 All required modules can be installed by doing
-> pip install -r requirements.txt
+```pip install -r requirements.txt```
