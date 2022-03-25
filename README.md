@@ -6,12 +6,14 @@ from FLIR radiometric jpegs.
 
 Usage
 -----
-> from tirAnalysis.FLIR_images import FLIR_image
-> im = FLIR_image("DJI_1098_R.JPG")
-> # Show "Planck" constants for converting RAW thermal image to temperature
-> print(im.planck)
-> # Print basic statistics for the distribution of temperatures in the image
-> print(im.T_stats)
+```
+from tirAnalysis.FLIR_images import FLIR_image
+im = FLIR_image("DJI_1098_R.JPG")
+# Show "Planck" constants for converting RAW thermal image to temperature
+print(im.planck)
+# Print basic statistics for the distribution of temperatures in the image
+print(im.T_stats)
+```
 
 
 Requirements
