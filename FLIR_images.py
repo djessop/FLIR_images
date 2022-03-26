@@ -2,6 +2,7 @@ import numpy as np
 import exiftool
 import os
 import matplotlib.pyplot as plt
+import tifffile
 
 
 class FLIR_image():
@@ -21,12 +22,18 @@ class FLIR_image():
     def __init__(self, filename):
         self.filename = filename
         self.metadata = self.get_metadata()
+        self.raw_fmt  = self.metadata["APP1:RawThermalImageType"].lower()
         self.planck   = self.get_planck_coeffs()
         self.width    = self.metadata["APP1:RawThermalImageWidth"]
         self.height   = self.metadata["APP1:RawThermalImageHeight"]
         self.shape    = (self.height, self.width)
         self.raw      = self.extract_raw_image()
         self.temp     = raw_to_temperature(self.raw, self.planck)
+        self.T_stats  = {"T_min": self.temp.min(),
+                         "T_max": self.temp.max(),
+                         "T_mean": self.temp.mean(),
+                         "T_std": self.temp.std(),
+                         "T_med": np.median(self.temp)}
 
     def get_metadata(self):
         """Extract metadata from image file using exiftool"""
@@ -75,7 +82,22 @@ class FLIR_image():
     #     R1 = planck["R1"]
     #     R2 = planck["R2"]
     #     self.temp = B / np.log(R1 / (R2*(S + O)) + F)
-    #     return 
+    #     return
+
+    def save_data(self, type="raw"):
+        """
+        
+        """
+        out_fname = ".".join(self.filename.split(".")[:-1]) 
+        if type.lower() == "raw":
+            data = self.raw
+        else:
+            out_fname += "_temp"
+            data = self.temp
+        out_fname += "." + self.raw_fmt
+        tifffile.imwrite(out_fname, data)
+        print(f"Saving {out_fname}...")
+        return
 
 
 def raw_to_temperature(S, planck):
@@ -106,4 +128,6 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
     im = FLIR_image(filename)
-    print(im.extract_raw_image().shape)
+    im.save_data()
+    #print(im.extract_raw_image().shape)
+    
