@@ -23,10 +23,6 @@ python FLIR_image.py DJI_1090_R.JPG
 Replace ```DJI_1090_R.JPG``` with the file that you wish to process.  
 
 
-TO DO:
-------
-- Include positional metadata in output tiff file
-- 
 
 
 Requirements

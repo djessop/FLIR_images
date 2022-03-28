@@ -1,7 +1,6 @@
+import os
 import numpy as np
 import exiftool
-import os
-import matplotlib.pyplot as plt
 import tifffile
 
 
@@ -86,9 +85,20 @@ class FLIR_image():
     #     self.temp = B / np.log(R1 / (R2*(S + O)) + F)
     #     return
 
-    def save_data(self, type="raw"):
+    def save_data(self, type="raw", filename=None):
         """
-        
+        Write image data to file using tifffile.imwrite.
+
+        Parameters
+        ----------
+        type : str (optional)
+            Selects between RAW ("raw") or temperature data as the image 
+            contents.  Default is "raw".
+
+        Returns
+        -------
+        None
+
         """
         out_fname = ".".join(self.filename.split(".")[:-1]) 
         if type.lower() == "raw":
@@ -97,8 +107,19 @@ class FLIR_image():
             out_fname += "_temp"
             data = self.temp
         out_fname += "." + self.raw_fmt
+
+        if filename is not None:
+            out_fname = filename
+        
         tifffile.imwrite(out_fname, data)
         print(f"Saving {out_fname}...")
+
+
+        with exiftool.ExifTool() as et:
+            et.execute(b"-tagsfromfile",
+                       bytes(self.filename, "utf-8"),
+                       bytes(out_fname, "utf-8"))
+
         return
 
 
