@@ -55,9 +55,11 @@ class FLIR_image():
         subsequently read using matplotlib's imread.
         """
         metadata = self.metadata
-        #fmt = metadata["APP1:RawThermalImageType"]
+        fmt = metadata["APP1:RawThermalImageType"].lower()
         os.system(f"exiftool {self.filename} -rawthermalimage -b > temp")
-        self.raw = plt.imread("temp")
+        # Only do this if the format is tiff.  Method should reflect image
+        # type
+        self.raw = tifffile.imread("temp")
         os.system("rm temp")
         return self.raw
 

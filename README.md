@@ -6,6 +6,7 @@ from FLIR radiometric jpegs.
 
 Example usage
 -------------
+In python (i.e. IDLE, ipython)
 ```
 from tirAnalysis.FLIR_images import FLIR_image
 im = FLIR_image("DJI_1098_R.JPG")
@@ -14,6 +15,18 @@ print(im.planck)
 # Print basic statistics for the distribution of temperatures in the image
 print(im.T_stats)
 ```
+
+From command line
+```
+python FLIR_image.py DJI_1090_R.JPG
+```
+Replace ```DJI_1090_R.JPG``` with the file that you wish to process.  
+
+
+TO DO:
+------
+- Include positional metadata in output tiff file
+- 
 
 
 Requirements
