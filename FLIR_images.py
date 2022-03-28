@@ -55,15 +55,15 @@ class FLIR_image():
         """
         metadata = self.metadata
         fmt = metadata["APP1:RawThermalImageType"].lower()
-        os.system(f"exiftool {self.filename} -rawthermalimage -b > temp")
+        os.system(f"exiftool {self.filename} -rawthermalimage -b > {self.filename}_temp")
         # with exiftool.ExifTool() as et:
         #     et.execute(bytes(self.filename, "utf-8"),
         #                b"-rawthermalimage -b > temp")
 
         # Only do this if the format is tiff.  Method should reflect image
         # type
-        self.raw = tifffile.imread("temp")
-        os.system("rm temp")
+        self.raw = tifffile.imread(f"{self.filename}_temp")
+        os.system(f"rm {self.filename}_temp")
         return self.raw
 
     # def raw_to_temperature(self):
