@@ -51,14 +51,14 @@ class FLIR_image():
         """
         Extract raw thermal image from metadata.  Requires exiftool to be 
         installed on the system, and creates a temporary image file that is 
-        subsequently read using matplotlib's imread.
+        subsequently read using tifffile's imread.
         """
         metadata = self.metadata
         fmt = metadata["APP1:RawThermalImageType"].lower()
-        # os.system(f"exiftool {self.filename} -rawthermalimage -b > temp")
-        with exiftool.ExifTool() as et:
-            et.execute(bytes(self.filename, "utf-8"),
-                       b"-rawthermalimage -b > temp")
+        os.system(f"exiftool {self.filename} -rawthermalimage -b > temp")
+        # with exiftool.ExifTool() as et:
+        #     et.execute(bytes(self.filename, "utf-8"),
+        #                b"-rawthermalimage -b > temp")
 
         # Only do this if the format is tiff.  Method should reflect image
         # type
@@ -104,7 +104,7 @@ class FLIR_image():
         None
 
         """
-        out_fname = ".".join(self.filename.split(".")[:-1]) 
+        out_fname = ".".join(self.filename.split(".")[:-1])
         if type.lower() == "raw":
             data = self.raw
         else:
