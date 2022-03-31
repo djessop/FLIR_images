@@ -95,7 +95,7 @@ class FLIR_image():
     #     self.temp = B / np.log(R1 / (R2*(S + O)) + F)
     #     return
 
-    def save_data(self, type="raw", filename=None):
+    def save_data(self, outtype="raw", filename=None):
         """
         Write image data to file using tifffile.imwrite.
 
@@ -115,7 +115,7 @@ class FLIR_image():
 
         """
         out_fname = ".".join(self.filename.split(".")[:-1])
-        if type.lower() == "raw":
+        if outtype.lower() == "raw":
             data = self.raw
         else:
             out_fname += "_temp"
@@ -165,8 +165,8 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
     out_type = sys.argv[2]
-    print(out_type)
+    #print(out_type)
     im = FLIR_image(filename)
-    im.save_data()
+    im.save_data(type="temp")
     #print(im.extract_raw_image().shape)
     
