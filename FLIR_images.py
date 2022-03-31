@@ -164,6 +164,7 @@ if __name__ == "__main__":
     import sys
 
     filename = sys.argv[1]
+    out_type = sys.argv[2]
     im = FLIR_image(filename)
     im.save_data()
     #print(im.extract_raw_image().shape)
