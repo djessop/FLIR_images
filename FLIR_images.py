@@ -16,9 +16,13 @@ class FLIR_image():
         raw_to_temperature : converts raw thermal image to temperature using
             the Planck coefficients defined in the metadata.
 
+    TO DO:
+    ------
+    - Include atmospheric transmissivity calculations
+
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, e=1., tau=1.):
         self.filename = filename
         self.metadata = self.get_metadata()
         self.raw_fmt  = self.metadata["APP1:RawThermalImageType"].lower()
@@ -33,6 +37,8 @@ class FLIR_image():
                          "T_mean": self.temp.mean(),
                          "T_std": self.temp.std(),
                          "T_med": np.median(self.temp)}
+        self.e        = e    # surface emissivity
+        self.tau      = tau  # atmospheric transmissivity
 
     def get_metadata(self):
         """Extract metadata from image file using exiftool"""
@@ -98,6 +104,10 @@ class FLIR_image():
         type : str (optional)
             Selects between RAW ("raw") or temperature data as the image 
             contents.  Default is "raw".
+        filename : str (optional)
+            Specify an alternative output filename.  By default, this will be 
+            the same as the input file except that the extension (e.g. jpg or 
+            JPG) will be replaced by "tiff".  
 
         Returns
         -------
@@ -118,7 +128,7 @@ class FLIR_image():
         tifffile.imwrite(out_fname, data)
         print(f"Saving {out_fname}...")
 
-
+        # overwrite (limited) exif data will full metadata from original image
         with exiftool.ExifTool() as et:
             et.execute(b"-tagsfromfile",
                        bytes(self.filename, "utf-8"),
