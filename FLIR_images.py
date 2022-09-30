@@ -95,7 +95,7 @@ class FLIR_image():
     #     self.temp = B / np.log(R1 / (R2*(S + O)) + F)
     #     return
 
-    def save_data(self, outtype="raw", filename=None):
+    def save_data(self, outtype="raw", filename=None, includeexif=True):
         """
         Write image data to file using tifffile.imwrite.
 
@@ -129,10 +129,11 @@ class FLIR_image():
         print(f"Saving {out_fname}...")
 
         # overwrite (limited) exif data will full metadata from original image
-        with exiftool.ExifTool() as et:
-            et.execute(b"-tagsfromfile",
-                       bytes(self.filename, "utf-8"),
-                       bytes(out_fname, "utf-8"))
+        if indludeexif:
+            with exiftool.ExifTool() as et:
+                et.execute(b"-tagsfromfile",
+                           bytes(self.filename, "utf-8"),
+                           bytes(out_fname, "utf-8"))
 
         return
 
@@ -157,8 +158,6 @@ def raw_to_temperature(S, planck):
     R2 = planck["R2"]
     return B / np.log(R1 / (R2*(S + O)) + F)
     
-
-
 
 if __name__ == "__main__":
     import sys
