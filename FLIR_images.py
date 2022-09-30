@@ -164,7 +164,7 @@ if __name__ == "__main__":
     import sys
 
     filename = sys.argv[1]
-    out_type = sys.argv[2]
+    #out_type = sys.argv[2]
     #print(out_type)
     im = FLIR_image(filename)
     im.save_data(outtype="temp")
