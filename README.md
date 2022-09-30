@@ -24,14 +24,19 @@ Replace ```DJI_1090_R.JPG``` with the file that you wish to process.
 
 
 
-
 Requirements
 ------------
 ```
-matplotlib
+tifftile
 numpy
 PyExifTool
 ```
 
 All required modules can be installed by doing
 ```pip install -r requirements.txt```
+
+
+TO DO:
+------
+- Atmospheric transmissivity and surface reflectivity
+- Provide bash script to do things ex-python
