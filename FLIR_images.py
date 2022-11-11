@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+# coding: utf8
+
+"""
+FLIR_image.py
+
+Provides:
+FLIR_image : class 
+    Provides methods for handling FLIR thermal images
+raw_to_temperature : function
+     Converts RAW thermal image values to temperature
+"""
+
 import os
 import numpy as np
 import exiftool
@@ -129,7 +142,7 @@ class FLIR_image():
         print(f"Saving {out_fname}...")
 
         # overwrite (limited) exif data will full metadata from original image
-        if indludeexif:
+        if includeexif:
             with exiftool.ExifTool() as et:
                 et.execute(b"-tagsfromfile",
                            bytes(self.filename, "utf-8"),
@@ -140,16 +153,16 @@ class FLIR_image():
 
 def raw_to_temperature(S, planck):
     r"""
-        Convert RAW thermal image values to temperature, :math:`T`, (in 
-        Kelvin) via 
-        .. math::
-            T = B / \log(R_1/(R_2(S + O)) + F) ,
+    Convert RAW thermal image values to temperature, :math:`T`, (in 
+    Kelvin) via 
+    .. math::
+        T = B / \log(R_1/(R_2(S + O)) + F) ,
 
-        where :math:`B = [1300--1600]`, :math:`F = [0.5--2]`, :math:`O < 0`, 
-        :math:`R_1` and :math:`R_2` are Planck constants that can be found 
-        from the exif data, and :math:`S` is the (16-bit) RAW value.
+    where :math:`B = [1300--1600]`, :math:`F = [0.5--2]`, :math:`O < 0`, 
+    :math:`R_1` and :math:`R_2` are Planck constants that can be found 
+    from the exif data, and :math:`S` is the (16-bit) RAW value.
 
-        See https://exiftool.org/forum/index.php?topic=4898.60
+    See https://exiftool.org/forum/index.php?topic=4898.60
     """
     B = planck["B"]
     F = planck["F"]
@@ -163,9 +176,11 @@ if __name__ == "__main__":
     import sys
 
     filename = sys.argv[1]
-    #out_type = sys.argv[2]
+    out_type = "temp"
+    if len(sys.argv) > 2:
+        out_type = sys.argv[2]
     #print(out_type)
     im = FLIR_image(filename)
-    im.save_data(outtype="temp")
+    im.save_data(outtype=out_type)
     #print(im.extract_raw_image().shape)
     
