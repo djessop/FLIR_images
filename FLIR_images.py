@@ -35,16 +35,17 @@ class FLIR_image():
 
     """
 
-    def __init__(self, filename, e=1., tau=1.):
+    def __init__(self, filename, e=1., tau=1., bitdepth=16):
         self.filename = filename
         self.metadata = self.get_metadata()
         self.raw_fmt  = self.metadata["APP1:RawThermalImageType"].lower()
         self.planck   = self.get_planck_coeffs()
         self.width    = self.metadata["APP1:RawThermalImageWidth"]
         self.height   = self.metadata["APP1:RawThermalImageHeight"]
+        self.bitdepth = bitdepth  # choose 16, 32 or 64 bits
         self.shape    = (self.height, self.width)
         self.raw      = self.extract_raw_image()
-        self.temp     = raw_to_temperature(self.raw, self.planck)
+        self.temp     = raw_to_temperature(self.raw, self.planck, self.bitdepth)
         self.T_stats  = {"T_min": self.temp.min(),
                          "T_max": self.temp.max(),
                          "T_mean": self.temp.mean(),
@@ -52,6 +53,7 @@ class FLIR_image():
                          "T_med": np.median(self.temp)}
         self.e        = e    # surface emissivity
         self.tau      = tau  # atmospheric transmissivity
+
 
     def get_metadata(self):
         """Extract metadata from image file using exiftool"""
@@ -151,7 +153,7 @@ class FLIR_image():
         return
 
 
-def raw_to_temperature(S, planck):
+def raw_to_temperature(S, planck, bitdepth=16):
     r"""
     Convert RAW thermal image values to temperature, :math:`T`, (in 
     Kelvin) via 
@@ -169,8 +171,33 @@ def raw_to_temperature(S, planck):
     O = planck["O"]
     R1 = planck["R1"]
     R2 = planck["R2"]
-    return B / np.log(R1 / (R2*(S + O)) + F)
+
+    data = B / np.log(R1 / (R2*(S + O)) + F)
     
+    if bitdepth == 16:
+        return np.float16(data)
+    return data # else suppose 64-bit depth required
+
+
+def temperature_to_raw(T, planck):
+    r"""
+    Convert absolute temperatures, :math:`T`, to RAW thermal image values via
+    .. math::
+        S = R_1 / (R_2(exp(B/T) - F)) - O ,
+
+    where :math:`B = [1300--1600]`, :math:`F = [0.5--2]`, :math:`O < 0`, 
+    :math:`R_1` and :math:`R_2` are Planck constants that can be found 
+    from the exif data, and :math:`S` is the (16-bit) RAW value.
+
+    See https://exiftool.org/forum/index.php?topic=4898.60
+    """
+    B = planck["B"]
+    F = planck["F"]
+    O = planck["O"]
+    R1 = planck["R1"]
+    R2 = planck["R2"]
+    return R1 / (R2*(np.exp(B/T) - F)) - O
+
 
 if __name__ == "__main__":
     import sys
