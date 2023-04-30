@@ -9,6 +9,9 @@ FLIR_image : class
     Provides methods for handling FLIR thermal images
 raw_to_temperature : function
      Converts RAW thermal image values to temperature
+temperature_to_raw : function
+     Converts temperature values to RAW thermal image
+
 """
 
 import os
@@ -45,7 +48,7 @@ class FLIR_image():
         self.bitdepth = bitdepth  # choose 16, 32 or 64 bits
         self.shape    = (self.height, self.width)
         self.raw      = self.extract_raw_image()
-        self.temp     = raw_to_temperature(self.raw, self.planck, self.bitdepth)
+        self.temp     = raw_to_temperature(self.raw, self.planck)
         self.T_stats  = {"T_min": self.temp.min(),
                          "T_max": self.temp.max(),
                          "T_mean": self.temp.mean(),
@@ -133,14 +136,17 @@ class FLIR_image():
         if outtype.lower() == "raw":
             data = self.raw
         else:
-            out_fname += "_temp"
+            out_fname += "_T"
             data = self.temp
         out_fname += "." + self.raw_fmt
 
         if filename is not None:
             out_fname = filename
-        
-        tifffile.imwrite(out_fname, data)
+
+        if self.bitdepth == 16:
+            tifffile.imwrite(out_fname, data.astype('float16'))
+        else:
+            tifffile.imwrite(out_fname, data)
         print(f"Saving {out_fname}...")
 
         # overwrite (limited) exif data will full metadata from original image
@@ -153,7 +159,7 @@ class FLIR_image():
         return
 
 
-def raw_to_temperature(S, planck, bitdepth=16):
+def raw_to_temperature(S, planck):
     r"""
     Convert RAW thermal image values to temperature, :math:`T`, (in 
     Kelvin) via 
@@ -174,9 +180,7 @@ def raw_to_temperature(S, planck, bitdepth=16):
 
     data = B / np.log(R1 / (R2*(S + O)) + F)
     
-    if bitdepth == 16:
-        return np.float16(data)
-    return data # else suppose 64-bit depth required
+    return data
 
 
 def temperature_to_raw(T, planck):
@@ -196,7 +200,7 @@ def temperature_to_raw(T, planck):
     O = planck["O"]
     R1 = planck["R1"]
     R2 = planck["R2"]
-    return R1 / (R2*(np.exp(B/T) - F)) - O
+    return (R1 / (R2*(np.exp(B/T) - F)) - O).astype('uint16')
 
 
 if __name__ == "__main__":
