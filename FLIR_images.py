@@ -211,7 +211,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         out_type = sys.argv[2]
     #print(out_type)
-    im = FLIR_image(filename)
+    im = FLIR_image(filename, bitdepth=16)
     im.save_data(outtype=out_type)
     #print(im.extract_raw_image().shape)
     
