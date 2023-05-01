@@ -207,7 +207,7 @@ if __name__ == "__main__":
     import sys
 
     filename = sys.argv[1]
-    out_type = "temp"
+    out_type = "raw"
     if len(sys.argv) > 2:
         out_type = sys.argv[2]
     #print(out_type)
