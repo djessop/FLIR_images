@@ -134,7 +134,7 @@ class FLIR_image():
         """
         out_fname = ".".join(self.filename.split(".")[:-1])
         if outtype.lower() == "raw":
-            data = self.raw
+            data = self.raw.astype('uint16')
         else:
             out_fname += "_T"
             data = self.temp
@@ -143,10 +143,11 @@ class FLIR_image():
         if filename is not None:
             out_fname = filename
 
+        datatype = 'float16'
         if self.bitdepth == 16:
-            tifffile.imwrite(out_fname, data.astype('float16'))
-        else:
-            tifffile.imwrite(out_fname, data)
+            datatype = 'uint16'
+
+        tifffile.imwrite(out_fname, data.astype(datatype))
         print(f"Saving {out_fname}...")
 
         # overwrite (limited) exif data will full metadata from original image
