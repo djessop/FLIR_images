@@ -5,13 +5,20 @@ from FLIR radiometric jpegs.
 
 Current usage relies on system calls to "exiftool".  Future versions will
 (hopefully) incorporate all functions internally.
+	    
+Default settings are to save file in 'raw' format (i.e. radiometric, uint16-bit
+image), including exif data and removing the *_original file created by
+exiftool.
+
 
 Example usage
 -------------
 In python (i.e. IDLE, ipython)
 ```
 from tirAnalysis.FLIR_images import FLIR_image
-im = FLIR_image("DJI_1098_R.JPG", bitdepth=64)
+
+# Save as 64-bit valued absolute temperature
+im = FLIR_image("DJI_1098_R.JPG", bitdepth=64, outtype='T')
 # Show "Planck" constants for converting RAW thermal image to temperature
 print(im.planck)
 # Print basic statistics for the distribution of temperatures in the image

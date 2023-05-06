@@ -38,7 +38,8 @@ class FLIR_image():
 
     """
 
-    def __init__(self, filename, e=1., tau=1., bitdepth=16):
+    def __init__(self, filename, e=1., tau=1., bitdepth=16, outtype='raw',
+                 includeexif=True, removeoriginal=True):
         self.filename = filename
         self.metadata = self.get_metadata()
         self.raw_fmt  = self.metadata["APP1:RawThermalImageType"].lower()
@@ -56,6 +57,9 @@ class FLIR_image():
                          "T_med": np.median(self.temp)}
         self.e        = e    # surface emissivity
         self.tau      = tau  # atmospheric transmissivity
+        self.outtype  = outtype
+        self.includeexif    = includeexif
+        self.removeoriginal = removeoriginal
 
 
     def get_metadata(self):
@@ -63,6 +67,7 @@ class FLIR_image():
         with exiftool.ExifTool() as et:
             self.metadata = et.get_metadata(self.filename)
         return self.metadata
+
 
     def get_planck_coeffs(self):
         self.planck = {}
@@ -113,7 +118,7 @@ class FLIR_image():
     #     self.temp = B / np.log(R1 / (R2*(S + O)) + F)
     #     return
 
-    def save_data(self, outtype="raw", filename=None, includeexif=True):
+    def save_data(self, filename=None):
         """
         Write image data to file using tifffile.imwrite.
 
@@ -133,7 +138,7 @@ class FLIR_image():
 
         """
         out_fname = ".".join(self.filename.split(".")[:-1])
-        if outtype.lower() == "raw":
+        if self.outtype.lower() == "raw":
             data = self.raw.astype('uint16')
         else:
             out_fname += "_T"
@@ -151,13 +156,14 @@ class FLIR_image():
         print(f"Saving {out_fname}...")
 
         # overwrite (limited) exif data will full metadata from original image
-        if includeexif:
+        if self.includeexif:
             with exiftool.ExifTool() as et:
                 et.execute(b"-tagsfromfile",
                            bytes(self.filename, "utf-8"),
                            bytes(out_fname, "utf-8"))
 
-        os.remove(out_fname + '_original')
+        if self.removeoriginal:
+            os.remove(out_fname + '_original')
         
         return
 
@@ -215,8 +221,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         out_type = sys.argv[2]
     #print(out_type)
-    im = FLIR_image(filename, bitdepth=16)
-    im.save_data(outtype=out_type)
+    im = FLIR_image(filename, bitdepth=16, outtype=out_type)
+    im.save_data()
 
     
     #print(im.extract_raw_image().shape)
