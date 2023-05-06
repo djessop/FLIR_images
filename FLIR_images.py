@@ -157,6 +157,8 @@ class FLIR_image():
                            bytes(self.filename, "utf-8"),
                            bytes(out_fname, "utf-8"))
 
+        os.remove(out_fname + '_original')
+        
         return
 
 
@@ -206,6 +208,7 @@ def temperature_to_raw(T, planck):
 
 if __name__ == "__main__":
     import sys
+    import os
 
     filename = sys.argv[1]
     out_type = "raw"
@@ -214,5 +217,7 @@ if __name__ == "__main__":
     #print(out_type)
     im = FLIR_image(filename, bitdepth=16)
     im.save_data(outtype=out_type)
+
+    
     #print(im.extract_raw_image().shape)
     
