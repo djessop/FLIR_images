@@ -19,10 +19,16 @@ from tirAnalysis.FLIR_images import FLIR_image
 
 # Save as 64-bit valued absolute temperature
 im = FLIR_image("DJI_1098_R.JPG", bitdepth=64, outtype='T')
+im.save_data()
+
 # Show "Planck" constants for converting RAW thermal image to temperature
 print(im.planck)
+
 # Print basic statistics for the distribution of temperatures in the image
 print(im.T_stats)
+
+# Read non-thermal (i.e. visible) image
+im = FLIR_image("DJI_0988.jpg', thermalim=False)
 ```
 
 From command line

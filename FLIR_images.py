@@ -39,25 +39,30 @@ class FLIR_image():
     """
 
     def __init__(self, filename, e=1., tau=1., bitdepth=16, outtype='raw',
-                 includeexif=True, removeoriginal=True):
-        self.filename = filename
-        self.metadata = self.get_metadata()
-        self.raw_fmt  = self.metadata["APP1:RawThermalImageType"].lower()
-        self.planck   = self.get_planck_coeffs()
-        self.width    = self.metadata["APP1:RawThermalImageWidth"]
-        self.height   = self.metadata["APP1:RawThermalImageHeight"]
-        self.bitdepth = bitdepth  # choose 16, 32 or 64 bits
-        self.shape    = (self.height, self.width)
-        self.raw      = self.extract_raw_image()
-        self.temp     = raw_to_temperature(self.raw, self.planck)
-        self.T_stats  = {"T_min": self.temp.min(),
-                         "T_max": self.temp.max(),
-                         "T_mean": self.temp.mean(),
-                         "T_std": self.temp.std(),
-                         "T_med": np.median(self.temp)}
-        self.e        = e    # surface emissivity
-        self.tau      = tau  # atmospheric transmissivity
-        self.outtype  = outtype
+                 includeexif=True, removeoriginal=True, thermalim=True):
+        self.filename  = filename
+        self.metadata  = self.get_metadata()
+        self.position  = self.get_position()
+        self.outtype   = None
+        self.thermalim = thermalim
+        if self.thermalim:
+            self.raw_fmt  = self.metadata["APP1:RawThermalImageType"].lower()
+            self.planck   = self.get_planck_coeffs()
+            self.raw      = self.extract_raw_image()
+            self.temp     = raw_to_temperature(self.raw, self.planck)
+            self.T_stats  = {"T_min": self.temp.min(),
+                             "T_max": self.temp.max(),
+                             "T_mean": self.temp.mean(),
+                             "T_std": self.temp.std(),
+                             "T_med": np.median(self.temp)}
+            self.e        = e    # surface emissivity
+            self.tau      = tau  # atmospheric transmissivity
+            self.outtype  = outtype
+            self.bitdepth = bitdepth  # choose 16, 32 or 64 bits
+
+        self.width  = self.metadata["File:ImageWidth"]
+        self.height = self.metadata["File:ImageHeight"]
+        self.shape  = (self.height, self.width)
         self.includeexif    = includeexif
         self.removeoriginal = removeoriginal
 
@@ -67,6 +72,15 @@ class FLIR_image():
         with exiftool.ExifTool() as et:
             self.metadata = et.get_metadata(self.filename)
         return self.metadata
+
+
+    def get_position(self):
+        """ Extract "GPS" position from metadata """
+        self.position = {}
+        self.position['latitude']  = self.metadata['EXIF:GPSLatitude']
+        self.position['longitude'] = self.metadata['EXIF:GPSLongitude']
+        self.position['altitude']  = self.metadata['EXIF:GPSAltitude']
+        return self.position
 
 
     def get_planck_coeffs(self):
@@ -137,6 +151,10 @@ class FLIR_image():
         None
 
         """
+        if not self.thermalim:
+            raise AttributeError('"save_data" method available only for '
+                                 'thermal images')
+
         out_fname = ".".join(self.filename.split(".")[:-1])
         if self.outtype.lower() == "raw":
             data = self.raw.astype('uint16')
