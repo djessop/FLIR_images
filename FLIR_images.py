@@ -12,6 +12,8 @@ raw_to_temperature : function
 temperature_to_raw : function
      Converts temperature values to RAW thermal image
 
+See
+https://exiftool.org/forum/index.php?topic=4898.60
 """
 
 import os
@@ -19,6 +21,8 @@ import numpy as np
 import exiftool
 import tifffile
 
+# Example of Planck constants
+planck = {'R1': 385517, 'B': 1428, 'F': 1, 'O': -72, 'R2': 1}
 
 class FLIR_image():
     """
