@@ -15,7 +15,7 @@ Example usage
 -------------
 In python (i.e. IDLE, ipython)
 ```
-from tirAnalysis.FLIR_images import FLIR_image
+from FLIR_images import FLIR_image
 
 # Save as 64-bit valued absolute temperature
 im = FLIR_image("DJI_1098_R.JPG", bitdepth=64, outtype='T')
