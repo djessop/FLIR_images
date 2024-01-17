@@ -21,6 +21,7 @@ import numpy as np
 import exiftool
 import tifffile
 
+
 # Example of Planck constants
 planck = {'R1': 385517, 'B': 1428, 'F': 1, 'O': -72, 'R2': 1}
 
@@ -81,9 +82,16 @@ class FLIR_image():
     def get_position(self):
         """ Extract "GPS" position from metadata """
         self.position = {}
-        self.position['latitude']  = self.metadata['EXIF:GPSLatitude']
-        self.position['longitude'] = self.metadata['EXIF:GPSLongitude']
-        self.position['altitude']  = self.metadata['EXIF:GPSAltitude']
+        self.metadata['EXIF:GPSLatitude']  = None
+        self.metadata['EXIF:GPSLongitude'] = None
+        self.metadata['EXIF:GPSAltitude']  = None
+        if 'EXIF:GPSLatitude' in self.metadata.keys():
+            self.position['latitude']  = self.metadata['EXIF:GPSLatitude']
+        if 'EXIF:GPSLongitude' in self.metadata.keys():
+            self.position['longitude'] = self.metadata['EXIF:GPSLongitude']
+        if 'EXIF:GPSAltitude' in self.metadata.keys():
+            self.position['altitude']  = self.metadata['EXIF:GPSAltitude']
+            
         return self.position
 
 
@@ -102,39 +110,22 @@ class FLIR_image():
         """
         metadata = self.metadata
         fmt = metadata["APP1:RawThermalImageType"].lower()
-        os.system(f"exiftool {self.filename} -rawthermalimage -b > {self.filename}_temp")
+        os.system(f"exiftool {self.filename} -rawthermalimage -b > "
+                  + f"{self.filename}_temp")
         # with exiftool.ExifTool() as et:
         #     et.execute(bytes(self.filename, "utf-8"),
         #                b"-rawthermalimage -b > temp")
 
         # Only do this if the format is tiff.  Method should reflect image
         # type
-        self.raw = tifffile.imread(f"{self.filename}_temp")
+        if 'tif' in fmt:
+            self.raw = tifffile.imread(f"{self.filename}_temp")
+        if fmt == 'png':
+            from matplotlib.pyplot import imread
+            self.raw = imread(f"{self.filename}_temp")
         os.system(f"rm {self.filename}_temp")
         return self.raw
 
-    # def raw_to_temperature(self):
-    #     r"""
-    #     Convert RAW thermal image values to temperature, :math:`T`, (in 
-    #     Kelvin) via 
-    #     .. math::
-    #         T = B / \log(R_1/(R_2(S + O)) + F) ,
-
-    #     where :math:`B = [1300--1600]`, :math:`F = [0.5--2]`, :math:`O < 0`, 
-    #     :math:`R_1` and :math:`R_2` are Planck constants that can be found 
-    #     from the exif data, and :math:`S` is the (16-bit) RAW value.
-
-    #     See https://exiftool.org/forum/index.php?topic=4898.60
-    #     """
-    #     planck = self.planck
-    #     S = self.raw
-    #     B = planck["B"]
-    #     F = planck["F"]
-    #     O = planck["O"]
-    #     R1 = planck["R1"]
-    #     R2 = planck["R2"]
-    #     self.temp = B / np.log(R1 / (R2*(S + O)) + F)
-    #     return
 
     def save_data(self, filename=None):
         """
