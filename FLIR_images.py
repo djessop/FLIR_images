@@ -102,6 +102,7 @@ class FLIR_image():
                 self.planck[key[11:]] = val
         return self.planck
     
+
     def extract_raw_image(self):
         """
         Extract raw thermal image from metadata.  Requires exiftool to be 
